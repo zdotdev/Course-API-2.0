@@ -154,8 +154,60 @@ export const getBSIS = async (req, res) => {
             "2nd Year": { $first: "$2nd Year" },
             "3rd Year": { $first: "$3rd Year" },
             "4th Year": { $push: "$4th Year" }
-        }}
-    ]).filter({"1st Year.code" : {$regex : "BSIS"}})
+        }},
+        {$match : {"1st Year.code" : {$regex : "BSIS"}}}
+    ]).project({"1st Year.description" : 1, "2nd Year.description" : 1, "3rd Year.description" : 1, "4th Year.description" : 1})
+    }
+    catch(err){
+        console.log(err)
+    }
+    if(!course){
+        res.status(404).json({"Error" : "No data found"})
+    }
+    res.status(200).json({course})
+}
+
+export const getBSIT = async (req, res) => {
+    let course
+    try{
+        course = await Course.aggregate([{ $unwind: "$1st Year" },
+        { $sort: { "1st Year.description": 1 } },
+        { $group: {
+            _id: "$_id",
+            "1st Year": { $push: "$1st Year" },
+            "2nd Year": { $first: "$2nd Year" },
+            "3rd Year": { $first: "$3rd Year" },
+            "4th Year": { $first: "$4th Year" }
+        }},
+        { $unwind: "$2nd Year" },
+        { $sort: { "2nd Year.description": 1 } },
+        { $group: {
+            _id: "$_id",
+            "1st Year": { $first: "$1st Year" },
+            "2nd Year": { $push: "$2nd Year" },
+            "3rd Year": { $first: "$3rd Year" },
+            "4th Year": { $first: "$4th Year" }
+        }},
+        { $unwind: "$3rd Year" },
+        { $sort: { "3rd Year.description": 1 } },
+        { $group: {
+            _id: "$_id",
+            "1st Year": { $first: "$1st Year" },
+            "2nd Year": { $first: "$2nd Year" },
+            "3rd Year": { $push: "$3rd Year" },
+            "4th Year": { $first: "$4th Year" }
+        }},
+        { $unwind: "$4th Year" },
+        { $sort: { "4th Year.description": 1 } },
+        { $group: {
+            _id: "$_id",
+            "1st Year": { $first: "$1st Year" },
+            "2nd Year": { $first: "$2nd Year" },
+            "3rd Year": { $first: "$3rd Year" },
+            "4th Year": { $push: "$4th Year" }
+        }},
+        {$match : {"1st Year.code" : {$regex : "BSIT"}}}
+    ]).project({"1st Year.description" : 1, "2nd Year.description" : 1, "3rd Year.description" : 1, "4th Year.description" : 1})
     }
     catch(err){
         console.log(err)
